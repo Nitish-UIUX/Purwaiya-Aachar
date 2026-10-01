@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Delivery information for Purwaiya Aachar — areas, charges, and delivery times across Jharkhand.">
+  <title>Delivery Information — Purwaiya Aachar</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="header-container"></div>
+
+  <div class="page-hero section">
+    <div class="container">
+      <span class="section-label">Shipping</span>
+      <h1>Delivery Information 🚚</h1>
+      <p>We deliver our homemade aachar fresh and safe right to your doorstep</p>
+    </div>
+  </div>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="delivery-areas">
+        <div class="delivery-card fade-in">
+          <div class="icon">🏠</div>
+          <h3>Local Delivery</h3>
+          <p><strong>Bokaro & Ranchi City</strong><br>
+          Delivery: Same day / Next day<br>
+          Charge: ₹30 (Free above ₹500)<br>
+          Min. Order: No minimum</p>
+        </div>
+        <div class="delivery-card fade-in">
+          <div class="icon">🚗</div>
+          <h3>Nearby Areas</h3>
+          <p><strong>Jamshedpur, Dhanbad, Ramgarh</strong><br>
+          Delivery: 2-3 days<br>
+          Charge: ₹50 (Free above ₹500)<br>
+          Min. Order: ₹200</p>
+        </div>
+        <div class="delivery-card fade-in">
+          <div class="icon">📦</div>
+          <h3>Rest of Jharkhand</h3>
+          <p><strong>All other districts in Jharkhand</strong><br>
+          Delivery: 3-5 days<br>
+          Charge: ₹80<br>
+          Min. Order: ₹500</p>
+        </div>
+        <div class="delivery-card fade-in">
+          <div class="icon">🤝</div>
+          <h3>Self Pickup</h3>
+          <p><strong>Pick up from our location</strong><br>
+          Available: Mon-Sat, 9AM-7PM<br>
+          Charge: FREE<br>
+          Location: Bokaro / Ranchi</p>
+        </div>
+      </div>
+
+      <!-- Additional Info -->
+      <div style="max-width: 700px; margin: var(--space-3xl) auto 0;">
+        <div class="faq-list">
+          <div class="faq-item fade-in active">
+            <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+              <span>📦 How is the aachar packed for delivery?</span>
+              <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">Our aachar is packed in food-grade glass jars with tight-sealing lids. For delivery, jars are wrapped in bubble wrap and placed in a sturdy box to ensure safe transit.</div>
+            </div>
+          </div>
+          <div class="faq-item fade-in">
+            <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+              <span>🕐 When will I receive my order?</span>
+              <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">For Bokaro and Ranchi, orders are typically delivered same day or next day. For other locations, please check the delivery times listed above. After placing your order on WhatsApp, we will confirm the exact delivery date.</div>
+            </div>
+          </div>
+          <div class="faq-item fade-in">
+            <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+              <span>💰 What are the payment options?</span>
+              <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">We accept payments via UPI (PhonePe, Google Pay, Paytm), bank transfer, or cash on delivery (COD) for local orders. Payment details will be shared after order confirmation on WhatsApp.</div>
+            </div>
+          </div>
+          <div class="faq-item fade-in">
+            <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+              <span>🔄 Can I cancel or modify my order?</span>
+              <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">Yes, you can cancel or modify your order before it is shipped. Please message us on WhatsApp as soon as possible if you need to make changes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center" style="margin-top: var(--space-2xl);">
+        <a href="https://wa.me/919798649094?text=Hello! I have a question about delivery." target="_blank" class="btn btn-whatsapp btn-lg">
+          💬 Ask About Delivery
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+  <div id="whatsapp-float-container"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderComponents('delivery');
+      initScrollAnimations();
+    });
+  </script>
+</body>
+</html>

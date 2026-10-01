@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse all homemade pichal varieties — Mango, Lemon, Green Chilli, Jackfruit, Garlic and more. Order online via WhatsApp.">
+  <title>Shop All Aachar — Purwaiya Aachar</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <!-- Shop Header -->
+  <div class="shop-header section">
+    <div class="container">
+      <span class="section-label">Our Products</span>
+      <h1 class="section-title">All Aachar Varieties</h1>
+      <p class="section-subtitle">Explore our entire collection of traditional homemade aachar — made with love and the finest ingredients</p>
+
+      <!-- Category Filters -->
+      <div class="category-filters" id="categoryFilters"></div>
+    </div>
+  </div>
+
+  <!-- Products Grid -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="products-grid" id="shopGrid"></div>
+      <div class="text-center" style="margin-top: var(--space-2xl);">
+        <p style="color: var(--gray-500);" id="productCount"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-banner fade-in">
+        <h2>Can't Decide? 🤔</h2>
+        <p>Chat with us on WhatsApp and we'll help you choose the perfect aachar!</p>
+        <a href="https://wa.me/919798649094?text=Hello! I need help choosing aachar. Can you recommend some?" target="_blank" class="btn btn-lg">
+          💬 Ask Us on WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+  <div id="whatsapp-float-container"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script src="assets/js/whatsapp.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderComponents('shop');
+
+      const shopGrid = document.getElementById('shopGrid');
+      const filtersContainer = document.getElementById('categoryFilters');
+      const countEl = document.getElementById('productCount');
+      let activeCategory = 'All';
+
+      // Render filters
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `filter-btn ${cat === 'All' ? 'active' : ''}`;
+        btn.textContent = cat;
+        btn.addEventListener('click', () => {
+          activeCategory = cat;
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderProducts();
+        });
+        filtersContainer.appendChild(btn);
+      });
+
+      // Render products
+      function renderProducts() {
+        const filtered = getProductsByCategory(activeCategory);
+        shopGrid.innerHTML = '';
+        filtered.forEach(p => {
+          shopGrid.innerHTML += renderProductCard(p);
+        });
+        countEl.textContent = `Showing ${filtered.length} of ${products.length} products`;
+        initScrollAnimations();
+      }
+
+      renderProducts();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Read customer reviews and share your experience with Purwaiya Aachar homemade aachar.">
+  <title>Reviews — Purwaiya Aachar</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="header-container"></div>
+
+  <div class="page-hero section">
+    <div class="container">
+      <span class="section-label">Testimonials</span>
+      <h1>What Our Customers Say ⭐</h1>
+      <p>Real reviews from people who love our homemade pichal</p>
+    </div>
+  </div>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="reviews-grid" id="allReviews"></div>
+
+      <!-- Review Form -->
+      <div class="review-form fade-in" id="reviewForm">
+        <h2>Share Your Experience ✍️</h2>
+        <form onsubmit="submitReview(event)">
+          <div class="form-group">
+            <label>Your Name <span class="required">*</span></label>
+            <input type="text" class="form-input" id="reviewName" placeholder="Enter your name" required>
+          </div>
+          <div class="form-group">
+            <label>Your Location</label>
+            <input type="text" class="form-input" id="reviewLocation" placeholder="e.g. Ranchi">
+          </div>
+          <div class="form-group">
+            <label>Rating <span class="required">*</span></label>
+            <div class="star-rating-input" id="starRating">
+              <span class="star" data-rating="1">☆</span>
+              <span class="star" data-rating="2">☆</span>
+              <span class="star" data-rating="3">☆</span>
+              <span class="star" data-rating="4">☆</span>
+              <span class="star" data-rating="5">☆</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Product <span class="required">*</span></label>
+            <select class="form-input" id="reviewProduct" required>
+              <option value="">Select a product</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Your Review <span class="required">*</span></label>
+            <textarea class="form-input" id="reviewText" rows="4" placeholder="Tell us about your experience..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width:100%; justify-content:center;">
+            ✍️ Submit Review
+          </button>
+          <p style="text-align:center; font-size: 0.8rem; color: var(--gray-400); margin-top: 12px;">
+            Your review will be visible after approval
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+  <div id="whatsapp-float-container"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    let selectedRating = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderComponents('reviews');
+
+      // Render reviews
+      const container = document.getElementById('allReviews');
+      const allReviews = [...sampleReviews, ...getUserReviews()].filter(r => r.approved);
+
+      allReviews.forEach(review => {
+        container.innerHTML += `
+          <div class="review-card fade-in">
+            <div class="review-stars">${generateStars(review.rating)}</div>
+            <p class="review-text">"${review.text}"</p>
+            <div class="review-author">
+              <div class="review-avatar">${review.name.charAt(0)}</div>
+              <div class="review-author-info">
+                <strong>${review.name}</strong>
+                <span>${review.location || ''} • ${review.product}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // Populate product select
+      const select = document.getElementById('reviewProduct');
+      products.forEach(p => {
+        select.innerHTML += `<option value="${p.name}">${p.emoji} ${p.name}</option>`;
+      });
+
+      // Star rating
+      const stars = document.querySelectorAll('.star-rating-input .star');
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          selectedRating = parseInt(star.dataset.rating);
+          updateStars();
+        });
+        star.addEventListener('mouseenter', () => {
+          const hoverRating = parseInt(star.dataset.rating);
+          stars.forEach((s, i) => {
+            s.textContent = i < hoverRating ? '★' : '☆';
+            s.style.color = i < hoverRating ? 'var(--secondary)' : 'var(--gray-300)';
+          });
+        });
+      });
+
+      document.querySelector('.star-rating-input').addEventListener('mouseleave', updateStars);
+
+      initScrollAnimations();
+    });
+
+    function updateStars() {
+      const stars = document.querySelectorAll('.star-rating-input .star');
+      stars.forEach((s, i) => {
+        s.textContent = i < selectedRating ? '★' : '☆';
+        s.style.color = i < selectedRating ? 'var(--secondary)' : 'var(--gray-300)';
+      });
+    }
+
+    function getUserReviews() {
+      return JSON.parse(localStorage.getItem('pichal_user_reviews') || '[]');
+    }
+
+    function submitReview(e) {
+      e.preventDefault();
+
+      if (selectedRating === 0) {
+        showToast('Please select a rating!', 'error');
+        return;
+      }
+
+      const review = {
+        id: Date.now(),
+        name: document.getElementById('reviewName').value.trim(),
+        location: document.getElementById('reviewLocation').value.trim(),
+        rating: selectedRating,
+        product: document.getElementById('reviewProduct').value,
+        text: document.getElementById('reviewText').value.trim(),
+        date: new Date().toISOString().split('T')[0],
+        approved: false // Needs admin approval
+      };
+
+      const reviews = getUserReviews();
+      reviews.push(review);
+      localStorage.setItem('pichal_user_reviews', JSON.stringify(reviews));
+
+      showToast('Thank you! Your review has been submitted for approval ✅', 'success');
+      e.target.reset();
+      selectedRating = 0;
+      updateStars();
+    }
+  </script>
+</body>
+</html>

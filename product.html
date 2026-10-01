@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="View product details, select size and quantity, and order your favourite homemade pichal.">
+  <title>Product Details — Purwaiya Aachar</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <div class="product-detail">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator">/</span>
+        <a href="shop.html">Shop</a>
+        <span class="separator">/</span>
+        <span id="breadcrumbName">Product</span>
+      </div>
+
+      <div class="product-detail-grid" id="productDetailGrid">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Related Products -->
+      <section class="section">
+        <h2 class="section-title">You Might Also Like</h2>
+        <p class="section-subtitle">Explore more homemade pichal varieties</p>
+        <div class="products-grid" id="relatedGrid"></div>
+      </section>
+    </div>
+  </div>
+
+  <div id="footer-container"></div>
+  <div id="whatsapp-float-container"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script src="assets/js/whatsapp.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderComponents('shop');
+
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('slug');
+      const product = getProductBySlug(slug);
+
+      if (!product) {
+        document.getElementById('productDetailGrid').innerHTML = `
+          <div style="text-align:center; grid-column: 1/-1; padding: 60px 0;">
+            <h2>Product not found 😕</h2>
+            <p style="color: var(--gray-500); margin: 16px 0;">The product you're looking for doesn't exist.</p>
+            <a href="shop.html" class="btn btn-primary">Browse All Pichal</a>
+          </div>`;
+        return;
+      }
+
+      // Update page title
+      document.title = `${product.name} — ${BRAND_NAME} Pichal`;
+      document.getElementById('breadcrumbName').textContent = product.name;
+
+      let selectedSizeIdx = 1;
+      if (product.prices.length <= 1) selectedSizeIdx = 0;
+      let quantity = 1;
+
+      function renderDetail() {
+        const selectedPrice = product.prices[selectedSizeIdx];
+        const totalPrice = selectedPrice.price * quantity;
+
+        const availClass = product.availability === 'in-stock' ? 'in-stock'
+          : product.availability === 'limited' ? 'limited' : 'out-of-stock';
+        const availText = product.availability === 'in-stock' ? 'In Stock'
+          : product.availability === 'limited' ? 'Limited Stock' : 'Out of Stock';
+
+        document.getElementById('productDetailGrid').innerHTML = `
+          <div class="product-detail-image">
+            <img src="${product.image}" alt="${product.name}"
+                 onerror="this.src='https://placehold.co/600x400/2D5016/FFFFFF?text=${encodeURIComponent(product.emoji + ' ' + product.name)}'">
+          </div>
+          <div class="product-detail-info">
+            <span class="product-card-category">${product.category}</span>
+            <h1>${product.emoji} ${product.name}</h1>
+            <div class="product-detail-rating">
+              <span class="stars">${generateStars(product.rating)}</span>
+              <strong>${product.rating}/5</strong>
+              <span>— ${product.reviewCount} Reviews</span>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <span class="availability ${availClass}">
+                <span class="dot"></span> ${availText}
+              </span>
+            </div>
+
+            <div class="size-options">
+              <h3>Available Sizes</h3>
+              <div class="size-btns">
+                ${product.prices.map((p, i) => `
+                  <button class="size-btn ${i === selectedSizeIdx ? 'active' : ''}"
+                    onclick="selectSize(${i})">
+                    ${p.weight} — ${formatPrice(p.price)}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="selected-price">${formatPrice(totalPrice)}</div>
+
+            <div class="quantity-selector">
+              <span style="font-weight: 600;">Quantity:</span>
+              <button class="qty-btn" onclick="changeQty(-1)">−</button>
+              <span class="qty-value" id="qtyValue">${quantity}</span>
+              <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+
+            <div class="product-actions">
+              <button class="btn btn-primary btn-lg" onclick="addToCartFromDetail()">
+                🛒 Add to Cart
+              </button>
+              <a href="${generateWhatsAppLink(WHATSAPP_NUMBER, generateProductOrderMessage(product, selectedPrice.weight, selectedPrice.price, quantity))}"
+                 target="_blank" class="btn btn-whatsapp btn-lg">
+                💬 Order on WhatsApp
+              </a>
+            </div>
+
+            <div class="product-info-section">
+              <h3>About this Pichal</h3>
+              <p style="color: var(--gray-500); line-height: 1.8;">${product.longDesc}</p>
+            </div>
+
+            <div class="product-info-section">
+              <h3>Ingredients</h3>
+              <div class="ingredients-list">
+                ${product.ingredients.map(i => `<span class="ingredient-tag">${i}</span>`).join('')}
+              </div>
+            </div>
+
+            <div class="product-info-section">
+              <h3>Product Information</h3>
+              <table class="info-table">
+                <tr><td>Weight</td><td>${selectedPrice.weight}</td></tr>
+                <tr><td>Type</td><td>${product.type}</td></tr>
+                <tr><td>Preparation</td><td>${product.preparation}</td></tr>
+                <tr><td>Spice Level</td><td><span class="spice-level">${generateSpiceLevel(product.spiceLevel)}</span></td></tr>
+                <tr><td>Storage</td><td>${product.storage}</td></tr>
+                <tr><td>Shelf Life</td><td>${product.shelfLife}</td></tr>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      window.selectSize = function(idx) {
+        selectedSizeIdx = idx;
+        renderDetail();
+      };
+
+      window.changeQty = function(delta) {
+        quantity = Math.max(1, quantity + delta);
+        renderDetail();
+      };
+
+      window.addToCartFromDetail = function() {
+        const selectedPrice = product.prices[selectedSizeIdx];
+        Cart.addItem(product.id, selectedPrice.weight, selectedPrice.price, quantity);
+      };
+
+      renderDetail();
+
+      // Related products (same category, exclude current)
+      const relatedGrid = document.getElementById('relatedGrid');
+      const related = products
+        .filter(p => p.category === product.category && p.id !== product.id)
+        .slice(0, 3);
+
+      if (related.length === 0) {
+        // Show random products if no same-category ones
+        products.filter(p => p.id !== product.id).slice(0, 3).forEach(p => {
+          relatedGrid.innerHTML += renderProductCard(p);
+        });
+      } else {
+        related.forEach(p => {
+          relatedGrid.innerHTML += renderProductCard(p);
+        });
+      }
+
+      initScrollAnimations();
+    });
+  </script>
+</body>
+</html>

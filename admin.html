@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Purwaiya Aachar</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <!-- Admin Login -->
+  <div id="adminLogin" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--gray-100);">
+    <div style="background: white; border-radius: var(--radius-xl); padding: var(--space-2xl); max-width: 400px; width: 100%; box-shadow: var(--shadow-lg);">
+      <div class="text-center" style="margin-bottom: var(--space-xl);">
+        <span style="font-size: 3rem;">🌶️</span>
+        <h2 style="font-family: var(--font-heading); margin-top: 8px;">Admin Panel</h2>
+        <p style="color: var(--gray-500); font-size: 0.9rem;">Enter password to access dashboard</p>
+      </div>
+      <div class="form-group">
+        <input type="password" class="form-input" id="adminPassword" placeholder="Admin Password" onkeydown="if(event.key==='Enter') adminLogin()">
+      </div>
+      <button class="btn btn-primary btn-lg" style="width:100%; justify-content:center;" onclick="adminLogin()">
+        🔐 Login
+      </button>
+      <p style="text-align:center; font-size:0.8rem; color:var(--gray-400); margin-top:12px;">Default: admin123</p>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminDashboard" style="display:none;">
+    <div class="admin-layout">
+      <aside class="admin-sidebar" id="adminSidebar">
+        <h2>🌶️ Admin</h2>
+        <nav class="admin-nav">
+          <a href="#" class="active" onclick="showTab('dashboard')">📊 Dashboard</a>
+          <a href="#" onclick="showTab('products')">📦 Products</a>
+          <a href="#" onclick="showTab('orders')">🛒 Orders</a>
+          <a href="#" onclick="showTab('reviews')">⭐ Reviews</a>
+          <a href="index.html">🌐 View Website</a>
+          <a href="#" onclick="adminLogout()" style="color: var(--accent);">🚪 Logout</a>
+        </nav>
+      </aside>
+
+      <main class="admin-content">
+        <!-- Toggle sidebar on mobile -->
+        <button class="btn btn-sm" style="display:none; margin-bottom:16px; background:var(--dark); color:white;" id="sidebarToggle" onclick="document.getElementById('adminSidebar').classList.toggle('active')">
+          ☰ Menu
+        </button>
+
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard">
+          <div class="admin-header">
+            <h1>📊 Dashboard</h1>
+            <span style="color: var(--gray-500);" id="adminDate"></span>
+          </div>
+          <div class="admin-cards">
+            <div class="admin-card">
+              <h3>Total Products</h3>
+              <div class="value" id="statProducts">0</div>
+            </div>
+            <div class="admin-card">
+              <h3>Total Orders</h3>
+              <div class="value" id="statOrders">0</div>
+            </div>
+            <div class="admin-card">
+              <h3>Pending Reviews</h3>
+              <div class="value" id="statReviews">0</div>
+            </div>
+            <div class="admin-card">
+              <h3>Revenue</h3>
+              <div class="value" id="statRevenue">₹0</div>
+            </div>
+          </div>
+
+          <h2 style="font-family: var(--font-heading); margin-bottom: 16px;">Recent Orders</h2>
+          <div id="recentOrders"></div>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="tab-products" style="display:none;">
+          <div class="admin-header">
+            <h1>📦 Products</h1>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Price (500g)</th>
+                <th>Rating</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="productsTable"></tbody>
+          </table>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="tab-orders" style="display:none;">
+          <div class="admin-header">
+            <h1>🛒 Orders</h1>
+          </div>
+          <div id="ordersContent"></div>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div id="tab-reviews" style="display:none;">
+          <div class="admin-header">
+            <h1>⭐ Reviews</h1>
+          </div>
+          <div id="reviewsContent"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script src="assets/js/whatsapp.js"></script>
+  <script>
+    const ADMIN_PASSWORD = 'admin123';
+
+    // Check if already logged in
+    if (localStorage.getItem('pichal_admin_auth') === 'true') {
+      showDashboard();
+    }
+
+    function adminLogin() {
+      const pw = document.getElementById('adminPassword').value;
+      if (pw === ADMIN_PASSWORD) {
+        localStorage.setItem('pichal_admin_auth', 'true');
+        showDashboard();
+      } else {
+        alert('Invalid password!');
+      }
+    }
+
+    function adminLogout() {
+      localStorage.removeItem('pichal_admin_auth');
+      location.reload();
+    }
+
+    function showDashboard() {
+      document.getElementById('adminLogin').style.display = 'none';
+      document.getElementById('adminDashboard').style.display = 'block';
+      loadDashboard();
+      loadProducts();
+      loadOrders();
+      loadReviews();
+
+      // Show sidebar toggle on mobile
+      if (window.innerWidth <= 768) {
+        document.getElementById('sidebarToggle').style.display = 'inline-flex';
+      }
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+      document.getElementById(`tab-${tab}`).style.display = 'block';
+      document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Hide sidebar on mobile
+      document.getElementById('adminSidebar').classList.remove('active');
+    }
+
+    function loadDashboard() {
+      const orders = getLocalOrders();
+      const userReviews = JSON.parse(localStorage.getItem('pichal_user_reviews') || '[]');
+      const pendingReviews = userReviews.filter(r => !r.approved);
+      const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+      document.getElementById('statProducts').textContent = products.length;
+      document.getElementById('statOrders').textContent = orders.length;
+      document.getElementById('statReviews').textContent = pendingReviews.length;
+      document.getElementById('statRevenue').textContent = `₹${totalRevenue}`;
+      document.getElementById('adminDate').textContent = new Date().toLocaleDateString('en-IN', { dateStyle: 'full' });
+
+      // Recent orders
+      const recentContainer = document.getElementById('recentOrders');
+      if (orders.length === 0) {
+        recentContainer.innerHTML = '<p style="color: var(--gray-400); padding: 20px;">No orders yet.</p>';
+        return;
+      }
+
+      let html = '<table class="admin-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody>';
+      orders.slice(0, 10).forEach(order => {
+        html += `<tr>
+          <td><strong>${order.orderId}</strong></td>
+          <td>${order.customerName}<br><small style="color:var(--gray-400)">${order.customerPhone}</small></td>
+          <td style="max-width:200px; font-size:0.85rem;">${order.items}</td>
+          <td><strong>₹${order.total}</strong></td>
+          <td>
+            <select class="form-input" style="padding:6px 10px; font-size:0.8rem; min-width:120px;" onchange="changeOrderStatus('${order.orderId}', this.value)">
+              <option value="New" ${order.status==='New'?'selected':''}>🔵 New</option>
+              <option value="Confirmed" ${order.status==='Confirmed'?'selected':''}>✅ Confirmed</option>
+              <option value="Preparing" ${order.status==='Preparing'?'selected':''}>👩‍🍳 Preparing</option>
+              <option value="Shipped" ${order.status==='Shipped'?'selected':''}>📦 Shipped</option>
+              <option value="Delivered" ${order.status==='Delivered'?'selected':''}>✅ Delivered</option>
+              <option value="Cancelled" ${order.status==='Cancelled'?'selected':''}>❌ Cancelled</option>
+            </select>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      recentContainer.innerHTML = html;
+    }
+
+    function changeOrderStatus(orderId, status) {
+      updateOrderStatus(orderId, status);
+      loadDashboard();
+    }
+
+    function loadProducts() {
+      const tbody = document.getElementById('productsTable');
+      let html = '';
+      products.forEach(p => {
+        const price = p.prices[1] || p.prices[0];
+        const availClass = p.availability === 'in-stock' ? 'confirmed' : p.availability === 'limited' ? 'preparing' : 'cancelled';
+        html += `<tr>
+          <td style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.5rem;">${p.emoji}</span>
+            <div>
+              <strong>${p.name}</strong><br>
+              <small style="color:var(--gray-400)">${p.slug}</small>
+            </div>
+          </td>
+          <td>${p.category}</td>
+          <td><strong>₹${price.price}</strong></td>
+          <td>${generateStars(p.rating)} ${p.rating}</td>
+          <td><span class="status-badge ${availClass}">${p.availability}</span></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function loadOrders() {
+      const container = document.getElementById('ordersContent');
+      const orders = getLocalOrders();
+
+      if (orders.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray-400); padding: 20px;">No orders yet. Orders will appear here when customers place them.</p>';
+        return;
+      }
+
+      let html = '';
+      orders.forEach(order => {
+        html += `
+        <div style="background:white; border-radius:var(--radius-lg); padding:var(--space-xl); margin-bottom:var(--space-md); border:1px solid var(--gray-200);">
+          <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:16px;">
+            <div>
+              <strong style="font-size:1.1rem;">${order.orderId}</strong>
+              <span class="status-badge ${order.status.toLowerCase()}" style="margin-left:8px;">${order.status}</span>
+              <p style="color:var(--gray-400); font-size:0.85rem; margin-top:4px;">${new Date(order.date).toLocaleString('en-IN')}</p>
+            </div>
+            <div style="text-align:right;">
+              <strong style="color:var(--primary); font-size:1.2rem;">₹${order.total}</strong>
+            </div>
+          </div>
+          <div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <h4 style="font-size:0.85rem; color:var(--gray-500); margin-bottom:8px;">Customer</h4>
+              <p><strong>${order.customerName}</strong></p>
+              <p style="font-size:0.9rem; color:var(--gray-500);">📞 ${order.customerPhone}</p>
+              <p style="font-size:0.9rem; color:var(--gray-500);">📍 ${order.customerAddress}, ${order.customerCity} - ${order.customerPincode}</p>
+              ${order.customerLandmark ? `<p style="font-size:0.9rem; color:var(--gray-500);">🏠 ${order.customerLandmark}</p>` : ''}
+            </div>
+            <div>
+              <h4 style="font-size:0.85rem; color:var(--gray-500); margin-bottom:8px;">Items</h4>
+              <p style="font-size:0.9rem;">${order.items}</p>
+              <p style="font-size:0.85rem; color:var(--gray-400); margin-top:8px;">Subtotal: ₹${order.subtotal} | Delivery: ₹${order.delivery}</p>
+            </div>
+          </div>
+          ${order.customerNotes ? `<p style="margin-top:12px; font-size:0.9rem; color:var(--gray-500);">📝 ${order.customerNotes}</p>` : ''}
+          <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+            <select class="form-input" style="padding:8px 12px; font-size:0.85rem; width:auto;" onchange="changeOrderStatus('${order.orderId}', this.value); loadOrders();">
+              <option value="New" ${order.status==='New'?'selected':''}>🔵 New</option>
+              <option value="Confirmed" ${order.status==='Confirmed'?'selected':''}>✅ Confirmed</option>
+              <option value="Preparing" ${order.status==='Preparing'?'selected':''}>👩‍🍳 Preparing</option>
+              <option value="Shipped" ${order.status==='Shipped'?'selected':''}>📦 Shipped</option>
+              <option value="Delivered" ${order.status==='Delivered'?'selected':''}>✅ Delivered</option>
+              <option value="Cancelled" ${order.status==='Cancelled'?'selected':''}>❌ Cancelled</option>
+            </select>
+          </div>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function loadReviews() {
+      const container = document.getElementById('reviewsContent');
+      const userReviews = JSON.parse(localStorage.getItem('pichal_user_reviews') || '[]');
+
+      if (userReviews.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray-400); padding: 20px;">No user-submitted reviews yet.</p>';
+        return;
+      }
+
+      let html = '';
+      userReviews.forEach((review, idx) => {
+        const statusClass = review.approved ? 'approved' : 'pending';
+        html += `
+        <div style="background:white; border-radius:var(--radius-lg); padding:var(--space-lg); margin-bottom:var(--space-md); border:1px solid var(--gray-200);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <strong>${review.name}</strong>
+              <span style="color:var(--gray-400); margin-left:8px;">${review.location || ''}</span>
+              <span class="status-badge ${statusClass}" style="margin-left:8px;">${review.approved ? 'Approved' : 'Pending'}</span>
+            </div>
+            <div style="color:var(--secondary);">${generateStars(review.rating)}</div>
+          </div>
+          <p style="margin-top:8px; color:var(--gray-500); font-size:0.9rem;">Product: <strong>${review.product}</strong></p>
+          <p style="margin-top:8px; font-style:italic; color:var(--dark-600);">"${review.text}"</p>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            ${!review.approved ? `<button class="btn btn-primary btn-sm" onclick="approveReview(${idx})">✅ Approve</button>` : ''}
+            <button class="btn btn-sm" style="background:var(--error); color:white;" onclick="deleteReview(${idx})">🗑️ Delete</button>
+          </div>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function approveReview(idx) {
+      const reviews = JSON.parse(localStorage.getItem('pichal_user_reviews') || '[]');
+      if (reviews[idx]) {
+        reviews[idx].approved = true;
+        localStorage.setItem('pichal_user_reviews', JSON.stringify(reviews));
+        loadReviews();
+        loadDashboard();
+      }
+    }
+
+    function deleteReview(idx) {
+      if (!confirm('Delete this review?')) return;
+      const reviews = JSON.parse(localStorage.getItem('pichal_user_reviews') || '[]');
+      reviews.splice(idx, 1);
+      localStorage.setItem('pichal_user_reviews', JSON.stringify(reviews));
+      loadReviews();
+      loadDashboard();
+    }
+  </script>
+</body>
+</html>

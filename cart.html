@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Your cart — review your pichal order, fill delivery details, and order via WhatsApp.">
+  <title>Cart — Purwaiya Aachar</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <div class="cart-page">
+    <div class="container">
+      <h1 class="section-title" style="text-align:left; margin-bottom: var(--space-xl);">🛒 Your Cart</h1>
+      <div id="cartContent"></div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>📦 Delivery Details</h2>
+        <button class="modal-close" onclick="closeCheckout()">✕</button>
+      </div>
+      <p style="color: var(--gray-500); margin-bottom: var(--space-xl); font-size: 0.9rem;">
+        Please fill in your details. Your order will be sent via WhatsApp for confirmation.
+      </p>
+      <form id="checkoutForm" onsubmit="handleCheckout(event)">
+        <div class="form-group">
+          <label>Full Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="custName" placeholder="Enter your full name" required>
+        </div>
+        <div class="form-group">
+          <label>Phone Number <span class="required">*</span></label>
+          <input type="tel" class="form-input" id="custPhone" placeholder="10-digit mobile number" required
+                 pattern="[0-9]{10}" maxlength="10">
+          <span class="error-text" id="phoneError" style="display:none;">Enter a valid 10-digit phone number</span>
+        </div>
+        <div class="form-group">
+          <label>Full Address <span class="required">*</span></label>
+          <textarea class="form-input" id="custAddress" rows="3" placeholder="House/Flat, Street, Area, Colony" required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City <span class="required">*</span></label>
+            <input type="text" class="form-input" id="custCity" placeholder="e.g. Ranchi" required>
+          </div>
+          <div class="form-group">
+            <label>Pincode <span class="required">*</span></label>
+            <input type="text" class="form-input" id="custPincode" placeholder="6-digit pincode" required
+                   pattern="[0-9]{6}" maxlength="6">
+            <span class="error-text" id="pincodeError" style="display:none;">Enter a valid 6-digit pincode</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Landmark <small>(optional)</small></label>
+          <input type="text" class="form-input" id="custLandmark" placeholder="Near temple, school, etc.">
+        </div>
+        <div class="form-group">
+          <label>Order Notes <small>(optional)</small></label>
+          <textarea class="form-input" id="custNotes" rows="2" placeholder="Any special instructions?"></textarea>
+        </div>
+
+        <div style="background: var(--primary-50); border-radius: var(--radius-md); padding: 16px; margin-bottom: var(--space-lg);">
+          <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+            <span>Subtotal</span>
+            <strong id="modalSubtotal">₹0</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+            <span>Delivery</span>
+            <strong id="modalDelivery">₹0</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size: 1.15rem; padding-top: 8px; border-top: 1px solid var(--primary-100);">
+            <strong>Total</strong>
+            <strong style="color: var(--primary);" id="modalTotal">₹0</strong>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-whatsapp btn-lg" style="width:100%; justify-content:center;">
+          💬 Place Order on WhatsApp
+        </button>
+        <p style="text-align:center; font-size: 0.8rem; color: var(--gray-400); margin-top: 12px;">
+          Your order details will be sent via WhatsApp for confirmation
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <div id="footer-container"></div>
+  <div id="whatsapp-float-container"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script src="assets/js/whatsapp.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderComponents('cart');
+      renderCart();
+
+      window.addEventListener('cartUpdated', renderCart);
+    });
+
+    function renderCart() {
+      const content = document.getElementById('cartContent');
+      const items = Cart.getItems();
+
+      if (items.length === 0) {
+        content.innerHTML = `
+          <div class="cart-empty">
+            <div class="cart-empty-icon">🛒</div>
+            <h2>Your Cart is Empty</h2>
+            <p>Looks like you haven't added any pichal yet. Browse our collection and add your favourites!</p>
+            <a href="shop.html" class="btn btn-primary btn-lg">🛍️ Browse Pichal</a>
+          </div>
+        `;
+        return;
+      }
+
+      let itemsHTML = '';
+      items.forEach(item => {
+        itemsHTML += `
+          <div class="cart-item">
+            <div class="cart-item-image">
+              <a href="product.html?slug=${item.slug}">
+                <img src="${item.image}" alt="${item.name}"
+                     onerror="this.src='https://placehold.co/100x100/2D5016/FFFFFF?text=${encodeURIComponent(item.emoji)}'">
+              </a>
+            </div>
+            <div class="cart-item-info">
+              <div class="cart-item-name">${item.emoji} ${item.name}</div>
+              <div class="cart-item-weight">${item.weight}</div>
+              <div class="cart-item-price">${formatPrice(item.price * item.qty)}</div>
+            </div>
+            <div class="cart-item-qty">
+              <button class="qty-btn" onclick="Cart.updateQty(${item.productId}, '${item.weight}', ${item.qty - 1}); renderCart();">−</button>
+              <span class="qty-value">${item.qty}</span>
+              <button class="qty-btn" onclick="Cart.updateQty(${item.productId}, '${item.weight}', ${item.qty + 1}); renderCart();">+</button>
+            </div>
+            <button class="cart-item-remove" onclick="Cart.removeItem(${item.productId}, '${item.weight}'); renderCart();" title="Remove">
+              🗑️
+            </button>
+          </div>
+        `;
+      });
+
+      const subtotal = Cart.getSubtotal();
+      const delivery = Cart.getDeliveryCharge();
+      const total = Cart.getTotal();
+
+      content.innerHTML = `
+        <div class="cart-layout">
+          <div class="cart-items">
+            ${itemsHTML}
+            <div style="display:flex; justify-content: space-between; margin-top: var(--space-md);">
+              <a href="shop.html" class="btn btn-outline btn-sm">← Continue Shopping</a>
+              <button class="btn btn-sm" style="background: var(--gray-200); color: var(--dark);" onclick="Cart.clear(); renderCart();">
+                🗑️ Clear Cart
+              </button>
+            </div>
+          </div>
+          <div class="cart-summary">
+            <h2>Order Summary</h2>
+            <div class="cart-summary-row">
+              <span>Subtotal (${Cart.getCount()} items)</span>
+              <span>${formatPrice(subtotal)}</span>
+            </div>
+            <div class="cart-summary-row">
+              <span>Delivery</span>
+              <span>${delivery === 0 ? '<span style="color: var(--success);">FREE ✨</span>' : formatPrice(delivery)}</span>
+            </div>
+            ${subtotal < 500 ? '<div style="font-size: 0.8rem; color: var(--gray-400); margin-bottom: 12px;">💡 Free delivery on orders above ₹500</div>' : ''}
+            <div class="cart-summary-row total">
+              <span>Total</span>
+              <span>${formatPrice(total)}</span>
+            </div>
+            <button class="btn btn-whatsapp btn-lg" onclick="openCheckout()">
+              💬 Proceed to Order
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function openCheckout() {
+      const modal = document.getElementById('checkoutModal');
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      // Update modal totals
+      document.getElementById('modalSubtotal').textContent = formatPrice(Cart.getSubtotal());
+      const delivery = Cart.getDeliveryCharge();
+      document.getElementById('modalDelivery').textContent = delivery === 0 ? 'FREE ✨' : formatPrice(delivery);
+      document.getElementById('modalTotal').textContent = formatPrice(Cart.getTotal());
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkoutModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Close modal on overlay click
+    document.getElementById('checkoutModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeCheckout();
+    });
+
+    async function handleCheckout(e) {
+      e.preventDefault();
+
+      const phone = document.getElementById('custPhone').value.trim();
+      const pincode = document.getElementById('custPincode').value.trim();
+
+      // Validate phone
+      if (!/^\d{10}$/.test(phone)) {
+        document.getElementById('phoneError').style.display = 'block';
+        document.getElementById('custPhone').classList.add('error');
+        return;
+      } else {
+        document.getElementById('phoneError').style.display = 'none';
+        document.getElementById('custPhone').classList.remove('error');
+      }
+
+      // Validate pincode
+      if (!/^\d{6}$/.test(pincode)) {
+        document.getElementById('pincodeError').style.display = 'block';
+        document.getElementById('custPincode').classList.add('error');
+        return;
+      } else {
+        document.getElementById('pincodeError').style.display = 'none';
+        document.getElementById('custPincode').classList.remove('error');
+      }
+
+      const customer = {
+        name: document.getElementById('custName').value.trim(),
+        phone,
+        address: document.getElementById('custAddress').value.trim(),
+        city: document.getElementById('custCity').value.trim(),
+        pincode,
+        landmark: document.getElementById('custLandmark').value.trim(),
+        notes: document.getElementById('custNotes').value.trim()
+      };
+
+      closeCheckout();
+      await processCheckout(customer);
+    }
+  </script>
+</body>
+</html>

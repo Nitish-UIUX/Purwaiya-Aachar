@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Frequently asked questions about Purwaiya Aachar homemade aachar — ingredients, shelf life, delivery, and more.">
+  <title>FAQ — Purwaiya Aachar</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="header-container"></div>
+
+  <div class="page-hero section">
+    <div class="container">
+      <span class="section-label">Help</span>
+      <h1>Frequently Asked Questions ❓</h1>
+      <p>Everything you need to know about our homemade aachar</p>
+    </div>
+  </div>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="faq-list" id="faqList"></div>
+
+      <div class="text-center" style="margin-top: var(--space-2xl);">
+        <p style="color: var(--gray-500); margin-bottom: var(--space-md);">Still have questions?</p>
+        <a href="https://wa.me/919798649094?text=Hello! I have a question about your aachar." target="_blank" class="btn btn-whatsapp btn-lg">
+          💬 Ask on WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+  <div id="whatsapp-float-container"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderComponents('faq');
+
+      const faqList = document.getElementById('faqList');
+      faqData.forEach((faq, idx) => {
+        faqList.innerHTML += `
+          <div class="faq-item fade-in" id="faq-${idx}">
+            <button class="faq-question" onclick="toggleFaq(${idx})">
+              <span>${faq.question}</span>
+              <span class="icon">+</span>
+            </button>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">${faq.answer.replace(/\n/g, '<br>')}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      initScrollAnimations();
+    });
+
+    function toggleFaq(idx) {
+      const item = document.getElementById(`faq-${idx}`);
+      const wasActive = item.classList.contains('active');
+
+      // Close all first
+      document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('active'));
+
+      // Toggle clicked
+      if (!wasActive) item.classList.add('active');
+    }
+  </script>
+</body>
+</html>
